@@ -1,0 +1,6 @@
+#ifndef ffmpeg_wrapper__h__
+#define ffmpeg_wrapper__h__
+
+@cmake_includes@
+
+#endif

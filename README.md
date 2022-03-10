@@ -27,7 +27,7 @@ This implementation split the logic of operation into pieces (binaries).
 
 There are the network layer and the presentation layer.
 
-All componentes comunicates with each other using IPC channels (Inter Process Communication) thanks to https://github.com/A-Ribeiro/aRibeiroPlatform .
+All components comunicate with each other using IPC channels (Inter Process Communication) thanks to https://github.com/A-Ribeiro/aRibeiroPlatform .
 
 ### Network Layer
 

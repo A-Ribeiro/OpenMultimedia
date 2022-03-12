@@ -1,8 +1,8 @@
 #ifndef __ImageTransmitterReceiver__h__
 #define __ImageTransmitterReceiver__h__
 
-#include <aribeiroCore/aribeiroCore.h>
-#include <aribeiroPlatform/aribeiroPlatform.h>
+#include <aRibeiroCore/aRibeiroCore.h>
+#include <aRibeiroPlatform/aRibeiroPlatform.h>
 using namespace aRibeiro;
 
 const int FORMAT_YUV2 = 1;//Android default image format

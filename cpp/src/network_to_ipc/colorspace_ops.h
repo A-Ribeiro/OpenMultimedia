@@ -1,8 +1,8 @@
 #ifndef colorspace_ops_h
 #define colorspace_ops_h
 
-#include <aribeiroCore/aribeiroCore.h>
-#include <aribeiroPlatform/aribeiroPlatform.h>
+#include <aRibeiroCore/aRibeiroCore.h>
+#include <aRibeiroPlatform/aRibeiroPlatform.h>
 using namespace aRibeiro;
 
 #include <stdint.h>

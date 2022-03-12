@@ -9,9 +9,9 @@
 
 #include <zlib.h>
 
-#include <aribeiroCore/aribeiroCore.h>
-#include <aribeiroPlatform/aribeiroPlatform.h>
-#include <aribeiroData/aribeiroData.h>
+#include <aRibeiroCore/aRibeiroCore.h>
+#include <aRibeiroPlatform/aRibeiroPlatform.h>
+#include <aRibeiroData/aRibeiroData.h>
 using namespace aRibeiro;
 
 #include <ffmpeg-wrapper/ffmpeg-wrapper.h>

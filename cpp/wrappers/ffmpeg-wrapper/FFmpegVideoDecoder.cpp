@@ -157,6 +157,9 @@ namespace FFmpegWrapper {
 
     void FFmpegVideoDecoder::release() {
 
+
+        //ARIBEIRO_ABORT(onDataThread == PlatformThread::getCurrentThread(), "Trying to release this element from the child thread.\n");
+
         if (onDataThread != NULL){
             printf("[FFmpegVideoDecoder] interrupt data thread start\n");
             onDataThread->interrupt();
@@ -296,7 +299,7 @@ namespace FFmpegWrapper {
                 return;
             }
 
-            VideoData_YUV420P *out = dataPool.create();
+            VideoData_YUV420P *out = dataPool.create(true);
 
             out->width = output_w;
             out->height = output_h;

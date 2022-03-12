@@ -64,10 +64,16 @@ namespace FFmpegWrapper {
         convert_to_420P_ctx = NULL;
         onDataThread = NULL;
         convert_to_420P_buffer_data = NULL;
+
+        onDataThread = new PlatformThread(this, &FFmpegVideoDecoder::OnData_Thread);
+        onDataThread->start();
     }
 
 
     void FFmpegVideoDecoder::initialize(VideoType videoType) {
+        
+        PlatformAutoLock autoLock(&mutex);
+
         if (ctx != NULL)
             return;
 
@@ -151,23 +157,13 @@ namespace FFmpegWrapper {
         parser = av_parser_init(codecID);
         ARIBEIRO_ABORT(parser == NULL, "av_parser_init error.\n");
 
-        onDataThread = new PlatformThread(this, &FFmpegVideoDecoder::OnData_Thread);
-        onDataThread->start();
     }
 
     void FFmpegVideoDecoder::release() {
 
+        PlatformAutoLock autoLock(&mutex);
 
         //ARIBEIRO_ABORT(onDataThread == PlatformThread::getCurrentThread(), "Trying to release this element from the child thread.\n");
-
-        if (onDataThread != NULL){
-            printf("[FFmpegVideoDecoder] interrupt data thread start\n");
-            onDataThread->interrupt();
-            onDataThread->wait();
-            delete onDataThread;
-            onDataThread = NULL;
-            printf("[FFmpegVideoDecoder] interrupt data thread done\n");
-        }
 
         while (dataQueue.size() > 0) {
             printf("Data Queue Size: %i\n", dataQueue.size());
@@ -212,6 +208,8 @@ namespace FFmpegWrapper {
     }
 
     void FFmpegVideoDecoder::sendSimpleBlockData(const uint8_t* input_data, int input_size) {
+
+        PlatformAutoLock autoLock(&mutex);
 
         pkt->size = input_size;
         pkt->data = (uint8_t*)input_data;
@@ -333,7 +331,8 @@ namespace FFmpegWrapper {
     }
 
     void FFmpegVideoDecoder::sendData(const uint8_t* input_data, int input_data_size) {
-        
+        PlatformAutoLock autoLock(&mutex);
+
         //use parser to get just frame packets
         int pos_acc = 0;
         while (pos_acc < input_data_size) {
@@ -371,6 +370,15 @@ namespace FFmpegWrapper {
     }
 
     FFmpegVideoDecoder::~FFmpegVideoDecoder() {
+        if (onDataThread != NULL){
+            printf("[FFmpegVideoDecoder] interrupt data thread start\n");
+            onDataThread->interrupt();
+            onDataThread->wait();
+            delete onDataThread;
+            onDataThread = NULL;
+            printf("[FFmpegVideoDecoder] interrupt data thread done\n");
+        }
+
         release();
     }
 

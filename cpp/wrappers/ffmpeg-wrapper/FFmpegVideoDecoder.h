@@ -40,6 +40,9 @@ namespace FFmpegWrapper {
 
         PlatformThread *onDataThread;
 
+        PlatformMutex mutex;
+
+
         void OnData_Thread();
 
 

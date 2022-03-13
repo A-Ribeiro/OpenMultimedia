@@ -5,10 +5,10 @@ endif()
 
 if (SWSCALE_ROOT)
 	find_path(SWSCALE_INCLUDE_DIR libswscale/swscale.h PATHS ${SWSCALE_ROOT})
-	find_library(SWSCALE_LIBRARIES NAMES swscale PATHS ${SWSCALE_ROOT})
+	find_library(SWSCALE_LIBRARIES NAMES swscale swscale.5 PATHS ${SWSCALE_ROOT})
 else()
 	find_path(SWSCALE_INCLUDE_DIR libswscale/swscale.h)
-	find_library(SWSCALE_LIBRARIES NAMES swscale)
+	find_library(SWSCALE_LIBRARIES NAMES swscale swscale.5)
 endif()
 
 if(SWSCALE_INCLUDE_DIR AND SWSCALE_LIBRARIES)

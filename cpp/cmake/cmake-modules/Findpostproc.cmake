@@ -5,10 +5,10 @@ endif()
 
 if (POSTPROC_ROOT)
 	find_path(POSTPROC_INCLUDE_DIR libpostproc/postprocess.h PATHS ${POSTPROC_ROOT})
-	find_library(POSTPROC_LIBRARIES NAMES postproc PATHS ${POSTPROC_ROOT})
+	find_library(POSTPROC_LIBRARIES NAMES postproc postproc.55 PATHS ${POSTPROC_ROOT})
 else()
 	find_path(POSTPROC_INCLUDE_DIR libpostproc/postprocess.h)
-	find_library(POSTPROC_LIBRARIES NAMES postproc)
+	find_library(POSTPROC_LIBRARIES NAMES postproc postproc.55)
 endif()
 
 if(POSTPROC_INCLUDE_DIR AND POSTPROC_LIBRARIES)

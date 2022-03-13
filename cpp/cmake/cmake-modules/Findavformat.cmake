@@ -5,10 +5,10 @@ endif()
 
 if (AVFORMAT_ROOT)
 	find_path(AVFORMAT_INCLUDE_DIR libavformat/avformat.h PATHS ${AVFORMAT_ROOT})
-	find_library(AVFORMAT_LIBRARIES NAMES avformat PATHS ${AVFORMAT_ROOT})
+	find_library(AVFORMAT_LIBRARIES NAMES avformat avformat.58 PATHS ${AVFORMAT_ROOT})
 else()
 	find_path(AVFORMAT_INCLUDE_DIR libavformat/avformat.h)
-	find_library(AVFORMAT_LIBRARIES NAMES avformat)
+	find_library(AVFORMAT_LIBRARIES NAMES avformat avformat.58)
 endif()
 
 if(AVFORMAT_INCLUDE_DIR AND AVFORMAT_LIBRARIES)

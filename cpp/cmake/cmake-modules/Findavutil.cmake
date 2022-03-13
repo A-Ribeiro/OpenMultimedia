@@ -5,10 +5,10 @@ endif()
 
 if (AVUTIL_ROOT)
 	find_path(AVUTIL_INCLUDE_DIR libavutil/avutil.h PATHS ${AVUTIL_ROOT})
-	find_library(AVUTIL_LIBRARIES NAMES avutil PATHS ${AVUTIL_ROOT})
+	find_library(AVUTIL_LIBRARIES NAMES avutil avutil.56 PATHS ${AVUTIL_ROOT})
 else()
 	find_path(AVUTIL_INCLUDE_DIR libavutil/avutil.h)
-	find_library(AVUTIL_LIBRARIES NAMES avutil)
+	find_library(AVUTIL_LIBRARIES NAMES avutil avutil.56)
 endif()
 
 if(AVUTIL_INCLUDE_DIR AND AVUTIL_LIBRARIES)

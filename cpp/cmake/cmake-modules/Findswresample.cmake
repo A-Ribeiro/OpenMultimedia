@@ -5,10 +5,10 @@ endif()
 
 if (SWRESAMPLE_ROOT)
 	find_path(SWRESAMPLE_INCLUDE_DIR libswresample/swresample.h PATHS ${SWRESAMPLE_ROOT})
-	find_library(SWRESAMPLE_LIBRARIES NAMES swresample PATHS ${SWRESAMPLE_ROOT})
+	find_library(SWRESAMPLE_LIBRARIES NAMES swresample swresample.3 PATHS ${SWRESAMPLE_ROOT})
 else()
 	find_path(SWRESAMPLE_INCLUDE_DIR libswresample/swresample.h)
-	find_library(SWRESAMPLE_LIBRARIES NAMES swresample)
+	find_library(SWRESAMPLE_LIBRARIES NAMES swresample swresample.3)
 endif()
 
 if(SWRESAMPLE_INCLUDE_DIR AND SWRESAMPLE_LIBRARIES)

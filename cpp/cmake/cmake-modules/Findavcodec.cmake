@@ -5,10 +5,10 @@ endif()
 
 if (AVCODEC_ROOT)
 	find_path(AVCODEC_INCLUDE_DIR libavcodec/avcodec.h PATHS ${AVCODEC_ROOT})
-	find_library(AVCODEC_LIBRARIES NAMES avcodec PATHS ${AVCODEC_ROOT})
+	find_library(AVCODEC_LIBRARIES NAMES avcodec avcodec.58 PATHS ${AVCODEC_ROOT})
 else()
 	find_path(AVCODEC_INCLUDE_DIR libavcodec/avcodec.h)
-	find_library(AVCODEC_LIBRARIES NAMES avcodec)
+	find_library(AVCODEC_LIBRARIES NAMES avcodec avcodec.58)
 endif()
 
 if(AVCODEC_INCLUDE_DIR AND AVCODEC_LIBRARIES)

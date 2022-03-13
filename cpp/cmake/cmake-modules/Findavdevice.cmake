@@ -5,10 +5,10 @@ endif()
 
 if (AVDEVICE_ROOT)
 	find_path(AVDEVICE_INCLUDE_DIR libavdevice/avdevice.h PATHS ${AVDEVICE_ROOT})
-	find_library(AVDEVICE_LIBRARIES NAMES avdevice PATHS ${AVDEVICE_ROOT})
+	find_library(AVDEVICE_LIBRARIES NAMES avdevice avdevice.58 PATHS ${AVDEVICE_ROOT})
 else()
 	find_path(AVDEVICE_INCLUDE_DIR libavdevice/avdevice.h)
-	find_library(AVDEVICE_LIBRARIES NAMES avdevice)
+	find_library(AVDEVICE_LIBRARIES NAMES avdevice avdevice.58)
 endif()
 
 if(AVDEVICE_INCLUDE_DIR AND AVDEVICE_LIBRARIES)

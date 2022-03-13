@@ -5,10 +5,10 @@ endif()
 
 if (AVFILTER_ROOT)
 	find_path(AVFILTER_INCLUDE_DIR libavfilter/avfilter.h PATHS ${AVFILTER_ROOT})
-	find_library(AVFILTER_LIBRARIES NAMES avfilter PATHS ${AVFILTER_ROOT})
+	find_library(AVFILTER_LIBRARIES NAMES avfilter avfilter.7 PATHS ${AVFILTER_ROOT})
 else()
 	find_path(AVFILTER_INCLUDE_DIR libavfilter/avfilter.h)
-	find_library(AVFILTER_LIBRARIES NAMES avfilter)
+	find_library(AVFILTER_LIBRARIES NAMES avfilter avfilter.7)
 endif()
 
 if(AVFILTER_INCLUDE_DIR AND AVFILTER_LIBRARIES)

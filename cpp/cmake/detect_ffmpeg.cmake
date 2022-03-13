@@ -60,13 +60,14 @@ set(FFMPEG_INCLUDE_DIR
 
 list(REMOVE_DUPLICATES FFMPEG_INCLUDE_DIR)
 
+macro(ffmpeg_query_wildcard LIBRARY_DIR PATTERN OUTPUT )
+    get_filename_component(AUX ${LIBRARY_DIR} DIRECTORY)
+    FILE( GLOB AUX ${AUX}/${PATTERN})
+    list(GET AUX 0 AUX)
+    set(${OUTPUT} ${AUX})
+endmacro()
+
 if (OS_TARGET STREQUAL win)
-    macro(ffmpeg_query_wildcard LIBRARY_DIR PATTERN OUTPUT )
-        get_filename_component(AUX ${LIBRARY_DIR} DIRECTORY)
-        FILE( GLOB AUX ${AUX}/${PATTERN})
-        list(GET AUX 0 AUX)
-        set(${OUTPUT} ${AUX})
-    endmacro()
     macro(ffmpeg_copy_dll_after_build target dll_name)
 
         set(aux_project_name "${target}_copy_dll")

@@ -73,6 +73,12 @@ else()
     message(STATUS "NOTE: to compile 'ipc_dshow_source' you need to set the Visual Studio IDE")
 endif()
 
+if (OS_TARGET STREQUAL mac)
+    add_subdirectory(cpp/src/ipc_syphon_source)
+else()
+    message(STATUS "NOTE: to compile 'ipc_syphon_source' you need a Mac/x64 hardware")
+endif()
+
 #add_subdirectory(src/mini-gl-engine)
 
 #add_subdirectory(src/tech-demo-pbr)

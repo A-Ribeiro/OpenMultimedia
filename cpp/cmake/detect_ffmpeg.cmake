@@ -26,17 +26,23 @@ if (OS_TARGET STREQUAL win)
     set(SWRESAMPLE_ROOT ${FFMPEG_ROOT})
     set(SWSCALE_ROOT ${FFMPEG_ROOT})
 elseif (OS_TARGET STREQUAL mac)
-    set(FFMPEG_ROOT 
-        ${CMAKE_PARENT_LIST_DIR}/lgpl/ffmpeg/include
-        ${CMAKE_PARENT_LIST_DIR}/lgpl/ffmpeg/lib)
-    set(AVCODEC_ROOT ${FFMPEG_ROOT})
-    set(AVDEVICE_ROOT ${FFMPEG_ROOT})
-    set(AVFILTER_ROOT ${FFMPEG_ROOT})
-    set(AVFORMAT_ROOT ${FFMPEG_ROOT})
-    set(AVUTIL_ROOT ${FFMPEG_ROOT})
-    set(POSTPROC_ROOT ${FFMPEG_ROOT})
-    set(SWRESAMPLE_ROOT ${FFMPEG_ROOT})
-    set(SWSCALE_ROOT ${FFMPEG_ROOT})
+
+    if (ARCH_TARGET STREQUAL x64)
+        set(FFMPEG_ROOT 
+            ${CMAKE_PARENT_LIST_DIR}/lgpl/ffmpeg/include
+            ${CMAKE_PARENT_LIST_DIR}/lgpl/ffmpeg/lib)
+        set(AVCODEC_ROOT ${FFMPEG_ROOT})
+        set(AVDEVICE_ROOT ${FFMPEG_ROOT})
+        set(AVFILTER_ROOT ${FFMPEG_ROOT})
+        set(AVFORMAT_ROOT ${FFMPEG_ROOT})
+        set(AVUTIL_ROOT ${FFMPEG_ROOT})
+        set(POSTPROC_ROOT ${FFMPEG_ROOT})
+        set(SWRESAMPLE_ROOT ${FFMPEG_ROOT})
+        set(SWSCALE_ROOT ${FFMPEG_ROOT})
+    elseif (ARCH_TARGET STREQUAL arm64)
+        message(FATAL_ERROR "FFMPEG not compiled for this platform.")
+    endif()
+
 endif()
 
 find_package(avcodec REQUIRED QUIET)

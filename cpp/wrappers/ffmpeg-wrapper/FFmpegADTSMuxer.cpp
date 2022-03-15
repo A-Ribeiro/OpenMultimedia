@@ -100,7 +100,7 @@ namespace FFmpegWrapper {
         adts_stream = NULL;
 
 #if USE_BITSTREAM_FILTER
-        memset(FakeADTSHeader, sizeof(FakeADTSHeader), 0);
+        memset(FakeADTSHeader, 0, sizeof(FakeADTSHeader));
 #endif
     }
 

@@ -22,7 +22,9 @@ namespace FFmpegWrapper {
         std::vector<std::string> result;
         printf("Checking decoders:\n");
         const AVCodec *codec = NULL;
-        while (codec = av_codec_next(codec)) {
+        void *iter = NULL;
+        //while ((codec = av_codec_next(codec)) != NULL) {
+        while ((codec = av_codec_iterate(&iter)) != NULL) {
             if (codec->id == codecID && av_codec_is_decoder(codec)) {
                 printf("  ... %s\n", codec->name);
                 result.push_back(codec->name);

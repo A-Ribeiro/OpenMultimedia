@@ -173,6 +173,8 @@ ReadConsole(myConsoleHandle, command, 100, &cCharsRead, NULL);
 
     int num_of_system_threads = PlatformThread::QueryNumberOfSystemThreads();
 
+    num_of_system_threads /= 2;
+
     copyRescale = new CopyRescaleMultithread(num_of_system_threads,num_of_system_threads*4);
     decoder = new FFmpegVideoDecoder();
 
@@ -223,9 +225,12 @@ ReadConsole(myConsoleHandle, command, 100, &cCharsRead, NULL);
         receiver.force_connection_to_ip = std::string(argv[1]);
     receiver.start();
 
+    PlatformTime timer;
+
     PlatformLowLatencyQueueIPC queue( "aRibeiro Cam 01", PlatformQueueIPC_WRITE, 8, 1920*1080*2 );
     int count = 0;
     while (!PlatformThread::isCurrentThreadInterrupted()) {
+        interval = 1000/30 - 1;
 
         if (queue.writeHasEnoughSpace(w* h * 2, true)) {
             PlatformAutoLock autoLock(&mutex);
@@ -236,8 +241,13 @@ ReadConsole(myConsoleHandle, command, 100, &cCharsRead, NULL);
             //printf(".");
             //fflush(stdout);
         }
+
+        timer.update();
+        int passed_time_ms = timer.deltaTimeMicro/1000;
        
-        PlatformSleep::sleepMillis(interval);
+        if (passed_time_ms < interval)
+            PlatformSleep::sleepMillis(interval - passed_time_ms);
+        timer.update();
     }
 
     printf("receiver.close\n");

@@ -181,7 +181,7 @@ public:
     //
     bool open();
     void close();
-    void write(const void* buffer, int size);
+    void write(const uint8_t* buffer, int size);
 
     void setFormat(const v4l2_fmtdesc &fmt, const v4l2_frmsizeenum &res, const v4l2_frmivalenum &interval );
     void setNumberOfInputBuffers(int count);

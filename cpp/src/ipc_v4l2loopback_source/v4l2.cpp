@@ -3,7 +3,7 @@
 //#include <fcntl.h>              /* low-level i/o */
 #include <sys/ioctl.h>
 #include <dirent.h>
-#include <unistd.h> // readLink
+#include <unistd.h> // readLink, write
 
 #include <map>
 #include <string>
@@ -561,14 +561,14 @@ void Device::close()
     fd = -1;
 }
 
-void Device::write(const void *buffer, int size)
+void Device::write(const uint8_t *buffer, int size)
 {
     if (fd < 0 || size <= 0)
         return;
     size_t offset = 0;
 
     do {
-        offset += write(fd, &buffer[offset], size - offset);
+        offset += ::write(fd, &buffer[offset], size - offset);
     } while (offset < size);
 }
 

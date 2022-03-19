@@ -13,7 +13,7 @@ void signal_handler(int signal) {
 Device queryDeviceByName(const char* name) {
     std::vector<Device> devices = v4l2::listDevices();
     for(int i=0;i<devices.size();i++){
-        if (strcmp(name, devices[i].capability.card) == 0)
+        if (strcmp(name, (char*)devices[i].capability.card) == 0)
             return devices[i];
     }
     ARIBEIRO_ABORT(true, "Device not found: %s\n", name);
@@ -30,8 +30,8 @@ int main(int argc, char* argv[]){
     device = queryDeviceByName("aRibeiro Cam 01");
     //v4l2::loadDeviceInfo("/dev/video0",&device);
 
-    ARIBEIRO_ABORT( !(device.capability.capabilities & V4L2_CAP_VIDEO_CAPTURE),
-                    "device is not a video capture device.\n")
+    //ARIBEIRO_ABORT( !(device.capability.capabilities & V4L2_CAP_VIDEO_CAPTURE),
+    //                "device is not a video capture device.\n")
 
     v4l2_fmtdesc formatDescription;
     ARIBEIRO_ABORT( !device.queryPixelFormat(V4L2_PIX_FMT_YUYV, &formatDescription),
@@ -40,6 +40,9 @@ int main(int argc, char* argv[]){
     v4l2_frmsizeenum res;
     ARIBEIRO_ABORT( !device.queryNearResolutionForFormat(formatDescription, 1920, 1080, &res),
                     "could not query resolution.\n")
+
+    ARIBEIRO_ABORT( (res.discrete.width!= 1920) || (res.discrete.height != 1080),
+                    "Cannot open with resolution: 1920x1080.\n")
 
     v4l2_frmivalenum interval;
     ARIBEIRO_ABORT( !device.queryNearInterval(res, 30.0f, &interval),

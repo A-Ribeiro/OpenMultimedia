@@ -79,6 +79,12 @@ else()
     message(STATUS "NOTE: to compile 'ipc_syphon_source' you need a Mac/x64 hardware")
 endif()
 
+if (OS_TARGET STREQUAL linux)
+    add_subdirectory(cpp/src/ipc_v4l2loopback_source)
+else()
+    message(STATUS "NOTE: to compile 'ipc_v4l2loopback_source' you need a Linux OS")
+endif()
+
 #add_subdirectory(src/mini-gl-engine)
 
 #add_subdirectory(src/tech-demo-pbr)

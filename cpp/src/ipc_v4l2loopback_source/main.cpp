@@ -5,6 +5,11 @@ using namespace aRibeiro;
 
 #include "v4l2.h"
 
+#include <sys/ioctl.h>
+#include <dirent.h>
+#include <unistd.h> // readLink, write
+
+
 void signal_handler(int signal) {
     printf("   ****************** signal_handler **********************\n");
     PlatformThread::getMainThread()->interrupt();
@@ -20,6 +25,8 @@ Device queryDeviceByName(const char* name) {
     return Device();
 }
 
+#define ROUND_UP_2(num)  (((num)+1)&~1)
+
 int main(int argc, char* argv[]){
     PlatformSignal::Set(signal_handler);
     PlatformPath::setWorkingPath(PlatformPath::getExecutablePath(argv[0]));
@@ -30,8 +37,14 @@ int main(int argc, char* argv[]){
     device = queryDeviceByName("aRibeiro Cam 01");
     //v4l2::loadDeviceInfo("/dev/video0",&device);
 
-    //ARIBEIRO_ABORT( !(device.capability.capabilities & V4L2_CAP_VIDEO_CAPTURE),
-    //                "device is not a video capture device.\n")
+    printf("Found device: %s\n", device.path.c_str());
+    for(int i=0;i<device.supportedFormats.size();i++){
+        printf("Supported format: %s\n", fcc2s(device.supportedFormats[i].pixelformat).c_str());
+    }
+    
+    /*
+    ARIBEIRO_ABORT( !(device.capability.capabilities & V4L2_CAP_VIDEO_CAPTURE),
+                    "device is not a video capture device.\n")
 
     v4l2_fmtdesc formatDescription;
     ARIBEIRO_ABORT( !device.queryPixelFormat(V4L2_PIX_FMT_YUYV, &formatDescription),
@@ -53,8 +66,12 @@ int main(int argc, char* argv[]){
     fprintf(stderr," / %u x %u", res.discrete.width, res.discrete.height );
     fprintf(stderr," @ %s fps\n", fract2fps( interval.discrete ).c_str() );
 
+    //device.setFormat(format, res, interval);
+
+    */
+
     device.open();
-    device.setFormat(formatDescription, res, interval);
+    device.setWriteFormat( 1920, 1080, 30, V4L2_PIX_FMT_YUYV, 1920 * 2, 1920 * 1080 * 2 );
 
     aRibeiro::PlatformLowLatencyQueueIPC yuy2_queue( "aRibeiro Cam 01", PlatformQueueIPC_READ, 8, 1920 * 1080 * 2);
     aRibeiro::ObjectBuffer data_buffer;

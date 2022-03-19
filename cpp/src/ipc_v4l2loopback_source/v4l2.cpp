@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <aRibeiroCore/aRibeiroCore.h>
+
 static const char *prefixes[] = {
     "video",
     "radio",
@@ -561,6 +563,67 @@ void Device::close()
     fd = -1;
 }
 
+void Device::setWriteFormat(int width, int height, int fps, uint32_t pixelformat, int line_size_bytes, int image_size_bytes) {
+
+
+    /*
+    Device aux_device;
+    if (v4l2::loadDeviceInfo(path, &aux_device)) {
+        printf("**********************************\n"
+               "Device already set.\n"
+               "If you want to change the parameters, you need to remove and add the v4l2loopback kernel module.\n"
+               "**********************************\n");
+        //data already set
+        return;
+    }
+    */
+
+    v4l2_format format;
+    /*
+    memset(&format,0,sizeof(v4l2_format));
+    format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+
+    ARIBEIRO_ABORT(ioctl(fd, VIDIOC_G_FMT, &format) < 0,
+                   "Device could not get format: %s\n", strerror(errno))
+    if (format.fmt.pix.pixelformat != pixelformat ||
+        format.fmt.pix.width != width ||
+        format.fmt.pix.height != height ||
+        format.fmt.pix.sizeimage != image_size_bytes ||
+        format.fmt.pix.bytesperline != line_size_bytes) {
+    */
+
+        memset(&format,0,sizeof(v4l2_format));
+        format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+        format.fmt.pix.width = width;
+        format.fmt.pix.height = height;
+        format.fmt.pix.pixelformat = pixelformat;
+        format.fmt.pix.sizeimage = image_size_bytes;
+        format.fmt.pix.field = V4L2_FIELD_NONE;
+        format.fmt.pix.bytesperline = line_size_bytes;//(ROUND_UP_2 (width) * 2);
+        format.fmt.pix.colorspace = V4L2_COLORSPACE_SRGB;
+        ARIBEIRO_ABORT(ioctl(fd, VIDIOC_S_FMT, &format) < 0,
+                        "Device could not set format: %s\n", strerror(errno))
+    //}
+
+    v4l2_streamparm fpsparam;
+    /*
+    memset(&fpsparam, 0, sizeof(v4l2_streamparm));
+    fpsparam.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+    ARIBEIRO_ABORT(ioctl(fd, VIDIOC_G_PARM, &fpsparam) < 0,
+                   "Failed to set camera FPS: %s\n", strerror(errno))
+    if (fpsparam.parm.capture.timeperframe.denominator != fps){
+        */
+
+        memset(&fpsparam, 0, sizeof(v4l2_streamparm));
+        fpsparam.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+        fpsparam.parm.capture.timeperframe.numerator = 1;
+        fpsparam.parm.capture.timeperframe.denominator = fps;
+        ARIBEIRO_ABORT(ioctl(fd, VIDIOC_S_PARM, &fpsparam) < 0,
+                    "Failed to set camera FPS: %s\n", strerror(errno))
+    //}
+
+}
+
 void Device::write(const uint8_t *buffer, int size)
 {
     if (fd < 0 || size <= 0)
@@ -582,6 +645,7 @@ void Device::setFormat(const v4l2_fmtdesc &fmt, const v4l2_frmsizeenum &res, con
     }
 
     v4l2_format imageFormat;
+    memset(&imageFormat,0,sizeof(v4l2_format));
 
     imageFormat.type = fmt.type; // V4L2_BUF_TYPE_VIDEO_CAPTURE;
     imageFormat.fmt.pix.width = res.discrete.width;

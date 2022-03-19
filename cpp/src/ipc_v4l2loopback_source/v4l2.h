@@ -181,6 +181,7 @@ public:
     //
     bool open();
     void close();
+    void setWriteFormat(int width, int height, int fps, uint32_t pixelformat, int line_size_bytes, int image_size_bytes);
     void write(const uint8_t* buffer, int size);
 
     void setFormat(const v4l2_fmtdesc &fmt, const v4l2_frmsizeenum &res, const v4l2_frmivalenum &interval );

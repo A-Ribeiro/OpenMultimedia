@@ -153,7 +153,7 @@ ReadConsole(myConsoleHandle, command, 100, &cCharsRead, NULL);
 #endif
 
     // make only one instance running per time
-    PlatformBufferIPC bufferIPC("network-to-ipc", PlatformBufferIPC_READ | PlatformBufferIPC_WRITE, 0);
+    PlatformBufferIPC bufferIPC("network-to-ipc", 0);
     if (bufferIPC.isFirstProcess())
         bufferIPC.finishInitialization();
     else {

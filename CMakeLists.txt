@@ -85,6 +85,11 @@ else()
     message(STATUS "NOTE: to compile 'ipc_v4l2loopback_source' you need a Linux OS")
 endif()
 
+
+if ((OS_TARGET STREQUAL linux) OR (OS_TARGET STREQUAL mac))
+    add_subdirectory(cpp/src/clear_shm)
+endif()
+
 #add_subdirectory(src/mini-gl-engine)
 
 #add_subdirectory(src/tech-demo-pbr)

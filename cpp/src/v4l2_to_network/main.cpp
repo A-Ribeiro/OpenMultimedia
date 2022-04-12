@@ -101,7 +101,27 @@ int main(int argc, char *argv[])
             //device.setCtrlValue(ctrl, 128);
         //}
 
-        //device.printControls();
+        device.printControls();
+
+        v4l2_queryctrl ctrl;
+        if ( device.queryControlByName("Exposure, Auto", &ctrl ) && (ctrl.type == V4L2_CTRL_TYPE_MENU) ){
+            int v;
+            if (device.queryMenuByName(ctrl, "Aperture Priority Mode", &v)){
+                device.setCtrlValue(ctrl, v);
+                printf("Exposure, Auto = Aperture Priority Mode\n");
+            }
+        }
+
+        if ( device.queryControlByName("Focus, Auto", &ctrl ) && (ctrl.type == V4L2_CTRL_TYPE_BOOLEAN) ){
+            device.setCtrlValue(ctrl, 1);
+            printf("Focus, Auto = 1\n");
+        }
+
+        if ( device.queryControlByName("Exposure, Auto Priority", &ctrl ) && (ctrl.type == V4L2_CTRL_TYPE_BOOLEAN) ){
+            device.setCtrlValue(ctrl, 0);
+            printf("Exposure, Auto Priority = 0\n");
+        }
+
         device.setFormat(formatDescription, res, interval);
 
         // buffer allocation and information retrieve

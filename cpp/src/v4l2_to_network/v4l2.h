@@ -199,6 +199,10 @@ public:
 
     int getCtrlValue(const v4l2_queryctrl &qctrl);
     void setCtrlValue(const v4l2_queryctrl &qctrl, int v);
+
+
+    bool queryMenuByName(const v4l2_queryctrl &qctrl, const char* name, int *output);
+
 };
 
 class v4l2{

@@ -479,9 +479,9 @@ void Device::printControls()
 
     fprintf(stderr, "Controls\n");
 
-    for (int i = 0; i < controls.size(); i++)
+    for (int _i = 0; _i < controls.size(); _i++)
     {
-        v4l2_queryctrl &qctrl = controls[i];
+        v4l2_queryctrl &qctrl = controls[_i];
 
         fprintf(stderr, "%31s | (%s) min: %i max: %i step: %i",
                 qctrl.name,
@@ -497,6 +497,23 @@ void Device::printControls()
         else
         {
             fprintf(stderr, " value: (cannot read)\n");
+        }
+
+        if ((qctrl.type == V4L2_CTRL_TYPE_MENU ||
+             qctrl.type == V4L2_CTRL_TYPE_INTEGER_MENU)) {
+
+            v4l2_querymenu qmenu;
+            qmenu.id = qctrl.id;
+
+            for (int j = qctrl.minimum; j <= qctrl.maximum; j++) {
+                qmenu.index = j;
+                if (ioctl(fd, VIDIOC_QUERYMENU, &qmenu))
+                    continue;
+                if (qctrl.type == V4L2_CTRL_TYPE_MENU)
+                    printf("%31s  -> %d: %s\n", "", j, qmenu.name);
+                else
+                    printf("%31s  -> %d: %lld (0x%llx)\n", "", j, qmenu.value, qmenu.value);
+            }
         }
     }
 }
@@ -544,6 +561,27 @@ void Device::setCtrlValue(const v4l2_queryctrl &qctrl, int v)
                 strerror(errno), qctrl.name);
         exit(-1);
     }
+}
+
+bool Device::queryMenuByName(const v4l2_queryctrl &qctrl, const char* name, int *output) {
+    if (qctrl.type == V4L2_CTRL_TYPE_MENU) {
+
+        v4l2_querymenu qmenu;
+        qmenu.id = qctrl.id;
+
+        for (int j = qctrl.minimum; j <= qctrl.maximum; j++) {
+            qmenu.index = j;
+            if (ioctl(fd, VIDIOC_QUERYMENU, &qmenu))
+                continue;
+            if (strcmp((char*)qmenu.name, name) == 0) {
+                *output = j;
+                return true;
+            }
+        }
+
+    }
+
+    return false;
 }
 
 //

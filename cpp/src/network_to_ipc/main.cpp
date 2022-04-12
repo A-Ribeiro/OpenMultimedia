@@ -187,7 +187,11 @@ ReadConsole(myConsoleHandle, command, 100, &cCharsRead, NULL);
         "\n"
         "John 3:16\n\n");
 
+#if defined(ARIBEIRO_LINUX_LOADER_USE_USR_LOCAL_PATH)
+    char* img = PNGHelper::readPNG("/usr/local/etc/OpenMultimedia/background_no_connection.png",&w,&h,&chann,&pixDepth);
+#else
     char* img = PNGHelper::readPNG("background_no_connection.png",&w,&h,&chann,&pixDepth);
+#endif
 
     ARIBEIRO_ABORT(chann != 3 && chann != 4, "Background image must have 3 or 4 components (RGB or RGBA)")
 

@@ -1,5 +1,9 @@
 project (network-to-ipc)
 
+if (OS_TARGET STREQUAL linux)
+    set(ARIBEIRO_LINUX_LOADER_USE_USR_LOCAL_PATH OFF CACHE BOOL "Make the loaders to use the system path: /usr/local/etc/OpenMultimedia/.")
+endif()
+
 FILE( GLOB_RECURSE PUBLIC_HEADERS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.h)
 FILE( GLOB_RECURSE SRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.cpp)
 
@@ -18,6 +22,10 @@ target_link_libraries(${PROJECT_NAME}
     aRibeiroCore aRibeiroPlatform aRibeiroData
     zlib
 )
+
+if (ARIBEIRO_LINUX_LOADER_USE_USR_LOCAL_PATH)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -DARIBEIRO_LINUX_LOADER_USE_USR_LOCAL_PATH)
+endif()
 
 copy_file_after_build(${PROJECT_NAME} 
     resources/background_no_connection.png

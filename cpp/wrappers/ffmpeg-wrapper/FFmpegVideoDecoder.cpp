@@ -91,6 +91,9 @@ namespace FFmpegWrapper {
             case VideoType_3GPP:
                 codecID = AV_CODEC_ID_H263;
             break;
+            case VideoType_MJPEG:
+                codecID = AV_CODEC_ID_MJPEG;
+            break;
             default:
                 ARIBEIRO_ABORT(true,"Error to set decoder type.\n");
             break;

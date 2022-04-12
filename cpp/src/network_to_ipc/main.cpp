@@ -56,6 +56,9 @@ void On_Data(const uint8_t *data, size_t data_size,
         videoType = FFmpegWrapper::VideoType_H264;
     else if (format == FORMAT_3GPP)
         videoType = FFmpegWrapper::VideoType_3GPP;
+    else if (format == FORMAT_MJPEG)
+        videoType = FFmpegWrapper::VideoType_MJPEG;
+        
 
     if (videoType != FFmpegWrapper::VideoType_NONE){
         if (decoder->isInitialized() && decoder->videoType != videoType)

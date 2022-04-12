@@ -11,6 +11,7 @@ namespace FFmpegWrapper {
         VideoType_HEVC = 1,
         VideoType_H264 = 2,
         VideoType_3GPP = 3,
+        VideoType_MJPEG = 4
     };
 
     struct VideoData_YUV420P {

@@ -14,7 +14,7 @@ const int FORMAT_YUV420P_ZLIB = 100;
 const int FORMAT_H264 = 1000;
 const int FORMAT_HEVC = 1001;
 const int FORMAT_3GPP = 1002;
-//const int FORMAT_VP9 = 1003;
+const int FORMAT_MJPEG = 1003;
 
 
 static uint32_t compute_YUV420_888_FormatSize(int width, int height) {

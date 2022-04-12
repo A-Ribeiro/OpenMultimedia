@@ -4,8 +4,20 @@
 using namespace aRibeiro;
 
 #include "NetworkDiscovery.h"
+#include "NetworkTCPServer.h"
 
 #include "v4l2.h"
+
+const int FORMAT_YUV2 = 1; //Android default image format
+const int FORMAT_YUY2 = 2; //OBS channel image format
+
+const int FORMAT_YUV420P = 3;
+const int FORMAT_YUV420P_ZLIB = 100;
+
+const int FORMAT_H264 = 1000;
+const int FORMAT_HEVC = 1001;
+const int FORMAT_3GPP = 1002;
+const int FORMAT_MJPEG = 1003;
 
 void signal_handler(int signal)
 {
@@ -115,7 +127,11 @@ int main(int argc, char *argv[])
 
 
         NetworkDiscovery networkDiscovery("v4l2");
+        NetworkTCPServer networkTCPServer;
+
         networkDiscovery.start();
+        networkTCPServer.start();
+        
 
         while (!PlatformThread::isCurrentThreadInterrupted()){
             if (!device.dequeueBuffer(&bufferQueue))
@@ -123,9 +139,11 @@ int main(int argc, char *argv[])
 
             //output to stdout
             //write(fd_stdout,bufferPtr[bufferQueue.index],bufferQueue.bytesused);
-
-
-
+            networkTCPServer.write(
+                (uint8_t*)bufferPtr[bufferQueue.index],bufferQueue.bytesused,
+                res.discrete.width, res.discrete.height,
+                FORMAT_MJPEG
+            );
 
             if (!device.queueBuffer(bufferQueue.index, &bufferQueue))
                 break;
@@ -134,6 +152,7 @@ int main(int argc, char *argv[])
         device.streamOFF();
         device.close();
 
+        networkTCPServer.stop();
         networkDiscovery.stop();
 
         printf("Stream Stopped.\n");

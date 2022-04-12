@@ -81,6 +81,7 @@ endif()
 
 if (OS_TARGET STREQUAL linux)
     add_subdirectory(cpp/src/ipc_v4l2loopback_source)
+    add_subdirectory(cpp/src/v4l2_to_network)
 else()
     message(STATUS "NOTE: to compile 'ipc_v4l2loopback_source' you need a Linux OS")
 endif()

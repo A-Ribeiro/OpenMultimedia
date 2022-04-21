@@ -13,12 +13,20 @@ The current version is more flexible than the 1.x versions (2017).
 
 With the pandemic, I had more time to upgrade the original project's codebase.
 
+# What does it do?
+
+This is a framework written in C++ to allow the transmission of image streams over the network.
+
+There is an android app that streams the camera image.
+
+It is possible to use the image stream as virtual cameras within real-time video editing software like OBS.
+
 # Main Features
 
 - Fully rethought operating architecture;
 - Now the android application uses the MediaRecorder API;
 - Image compression modes are selected according to what is supported and enabled within the smartphone HW/API;
-- New viewers are compatible with DirectShow. They are at: [release files](https://github.com/A-Ribeiro/OpenMultimedia/releases);
+- New viewers are compatible with DirectShow, V4L2 Loopback and Syphon;
 - The device discovery algorithm uses IPv4 broadcast from the device to the active lan/wlan interfaces.
 
 ## Components

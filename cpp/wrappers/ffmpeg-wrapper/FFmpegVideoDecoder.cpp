@@ -7,9 +7,10 @@ namespace FFmpegWrapper {
 
 
     void FFmpegVideoDecoder::OnData_Thread(){
+        bool isSignaled;
         while (!PlatformThread::isCurrentThreadInterrupted()){
-            VideoData_YUV420P *data = dataQueue.dequeue();
-            if (dataQueue.isSignaled())
+            VideoData_YUV420P *data = dataQueue.dequeue(&isSignaled);
+            if (isSignaled)
                 break;
             if (onData != NULL)
                 onData(data->width,data->height, data->buffer.data, data->buffer.size );
@@ -172,7 +173,7 @@ namespace FFmpegWrapper {
 
         while (dataQueue.size() > 0) {
             printf("Data Queue Size: %i\n", dataQueue.size());
-            dataPool.release(dataQueue.dequeue(true));
+            dataPool.release(dataQueue.dequeue(NULL,true));
         }
         if (convert_to_420P_buffer_data != NULL) {
             av_free(convert_to_420P_buffer_data);

@@ -380,9 +380,10 @@ class CopyRescaleMultithread{
     ObjectQueue<CopyRescaleMultithread_Job> queue;
 
     void threadRun() {
+        bool isSignaled;
         while (!PlatformThread::isCurrentThreadInterrupted()){
-            CopyRescaleMultithread_Job job = queue.dequeue();
-            if (queue.isSignaled())
+            CopyRescaleMultithread_Job job = queue.dequeue(&isSignaled);
+            if (isSignaled)
                 break;
 
             for (int _y = job.blockStart; _y < job.blockEnd; _y++) {

@@ -49,9 +49,10 @@ public:
     aRibeiro::ObjectQueue<YUV2RGB_Multithread_Job> queue;
 
     void threadRun() {
+        bool isSignaled;
         while (!aRibeiro::PlatformThread::isCurrentThreadInterrupted()) {
-            YUV2RGB_Multithread_Job job = queue.dequeue();
-            if (queue.isSignaled())
+            YUV2RGB_Multithread_Job job = queue.dequeue(&isSignaled);
+            if (isSignaled)
                 break;
 
             //processing...

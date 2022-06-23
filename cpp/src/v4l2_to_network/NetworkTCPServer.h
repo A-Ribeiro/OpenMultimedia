@@ -61,12 +61,12 @@ class NetworkTCPServer
 
     void send_thread_run()
     {
-
+        bool isSignaled;
         while (!PlatformThread::isCurrentThreadInterrupted())
         {
 
-            ObjectBuffer *buffer = toSend.dequeue();
-            if (buffer == NULL || toSend.isSignaled())
+            ObjectBuffer *buffer = toSend.dequeue(&isSignaled);
+            if (buffer == NULL || isSignaled)
                 break;
 
             mutex.lock();
@@ -130,7 +130,7 @@ public:
         mutex.unlock();
 
         while (toSend.size() > 0)
-            pool.release(toSend.dequeue(true));
+            pool.release(toSend.dequeue(NULL,true));
     }
 
     void write(const uint8_t *data, uint32_t size, uint32_t width, uint32_t height, uint32_t format)

@@ -151,11 +151,10 @@ public class StreamTCPServer {
                     clientSocket.setTcpNoDelay(true);
                     clientSocket.setKeepAlive(false);// force disconnection...
 
-                    streamTCPServer.callback.OnNewClient(clientSocket);
-
                     Log.w(TAG, "adding Client: " + clientSocket.getInetAddress().getHostAddress());
                     synchronized(streamTCPServer._sync) {
                         streamTCPServer.clients.add(clientSocket);
+                        streamTCPServer.callback.OnNewClient(clientSocket);
                         //streamTCPServer.newConnection = true;
                     }
                 } catch (IOException e) {

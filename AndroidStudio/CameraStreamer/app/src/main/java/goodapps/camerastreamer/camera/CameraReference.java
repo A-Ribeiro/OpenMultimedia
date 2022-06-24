@@ -853,7 +853,10 @@ public class CameraReference {
                 ObjectBuffer buffer = buffer_queue.dequeue();
                 if (buffer == null)//signal
                     break;
-                init.callback_thiz.onPreviewFrame(init, buffer,init.new_camera);
+                synchronized (init) {
+                    if (init.callback_thiz != null)
+                        init.callback_thiz.onPreviewFrame(init, buffer, init.new_camera);
+                }
             }
         }
 

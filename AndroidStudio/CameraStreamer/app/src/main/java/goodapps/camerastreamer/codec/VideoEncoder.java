@@ -54,7 +54,8 @@ public class VideoEncoder {
 
     ByteBuffer aux_buffer = null;
 
-    public VideoEncoder(Type type) {
+    public VideoEncoder(Type type, Object _opaqueData) {
+        opaqueData = _opaqueData;
         this.type = type;
         switch(type){
             case HEVC:
@@ -150,7 +151,9 @@ public class VideoEncoder {
         timestamp_holder = HardwareEncoderHelper.timestamp_micro();
         first_time_query = true;
 
-        codecSpecificData.clear();
+        synchronized (codecSpecificData) {
+            codecSpecificData.clear();
+        }
     }
 
     public long computeTimeStamp_micro() {
@@ -327,20 +330,22 @@ public class VideoEncoder {
                 MediaFormat newMediaFormat = mEncoder.getOutputFormat();
 
                 // print all csd on output stream
-                codecSpecificData.clear();
-                MediaFormat format = mEncoder.getOutputFormat();
-                int csd_count = 0;
-                while (format.containsKey("csd-"+csd_count)) {
-                    ByteBuffer binByteBuffer = format.getByteBuffer("csd-"+csd_count);
-                    byte[] bin_byte = new byte[binByteBuffer.capacity()];
-                    binByteBuffer.position(0);
-                    binByteBuffer.get(bin_byte,0,bin_byte.length);
-                    codecSpecificData.add(bin_byte);
+                synchronized (codecSpecificData) {
+                    codecSpecificData.clear();
+                    MediaFormat format = mEncoder.getOutputFormat();
+                    int csd_count = 0;
+                    while (format.containsKey("csd-" + csd_count)) {
+                        ByteBuffer binByteBuffer = format.getByteBuffer("csd-" + csd_count);
+                        byte[] bin_byte = new byte[binByteBuffer.capacity()];
+                        binByteBuffer.position(0);
+                        binByteBuffer.get(bin_byte, 0, bin_byte.length);
+                        codecSpecificData.add(bin_byte);
 
-                    if (callback != null)
-                        callback.onVideoEncoderData(bin_byte,opaqueData);
+                        if (callback != null)
+                            callback.onVideoEncoderData(bin_byte, opaqueData);
 
-                    csd_count++;
+                        csd_count++;
+                    }
                 }
 
             } else if (fromChip.byteBuffer != null) {

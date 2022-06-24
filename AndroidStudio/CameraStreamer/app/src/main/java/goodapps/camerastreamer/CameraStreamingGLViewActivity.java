@@ -31,6 +31,7 @@ import goodapps.camerastreamer.gl.GLView;
 import network.NetworkConstants;
 import network.StreamDiscovering;
 import network.StreamTCPServer;
+import util.ObjectBuffer;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -268,10 +269,10 @@ public class CameraStreamingGLViewActivity extends AppCompatActivity implements 
             CameraHelper.startPreview(
                 new CameraReference.PreviewCallback() {
                     @Override
-                    public void onPreviewFrame(byte[] data, Object camera) {
+                    public void onPreviewFrame(CameraReference cameraReference, ObjectBuffer objectBuffer, Object camera) {
                         if (streamTCPServer != null) {
 
-                            if (size_yuv420 == data.length) {
+                            if (size_yuv420 == objectBuffer.getSize()) {
 
                                 VideoEncoder.Type selectedType = VideoEncoder.Type.None;
                                 int transmission_format = 0;
@@ -325,15 +326,15 @@ public class CameraStreamingGLViewActivity extends AppCompatActivity implements 
                                         videoEncoder.sendAllCSD();
                                     }
 
-                                    ByteBuffer cameraData = ByteBuffer.wrap(data);
-                                    cameraData.position(data.length);
+                                    ByteBuffer cameraData = ByteBuffer.wrap(objectBuffer.getArray());
+                                    cameraData.position(objectBuffer.getSize());
                                     videoEncoder.encode420P( cameraData );
 
                                 } else if (configurationData.transmissionType.equals("YUV420 (Zlib)")){
 
                                     // Compress the bytes
                                     Deflater compresser = new Deflater(Deflater.BEST_SPEED);
-                                    compresser.setInput(data);
+                                    compresser.setInput(objectBuffer.getArray(),0,objectBuffer.getSize());
                                     compresser.finish();
                                     int compressedDataLength = compresser.deflate(auxCompressBuffer);
                                     compresser.end();
@@ -358,17 +359,16 @@ public class CameraStreamingGLViewActivity extends AppCompatActivity implements 
                                     byteBuffer.putInt( currentSize.height );
                                     byteBuffer.putInt(FORMAT_YUV420P);
 
-                                    byteBuffer.put(data);
+                                    byteBuffer.put(objectBuffer.getArray(), 0, objectBuffer.getSize());
 
                                     streamTCPServer.send(byteBuffer.array(), byteBuffer.arrayOffset(), byteBuffer.position());
-
                                 }
-
-
                             }
                         }
                         //((GLRendererYUV2RGB)mGLView.getRenderer()).postYV12( data, size.width, size.height );
 
+                        // return the objectBuffer to the camera pool...
+                        cameraReference.bufferPool.release(objectBuffer);
                     }
                 }
             );

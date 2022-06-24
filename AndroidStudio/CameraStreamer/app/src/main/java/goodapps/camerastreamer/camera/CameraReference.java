@@ -120,6 +120,7 @@ public class CameraReference {
     private CaptureRequest.Builder captureRequestBuilder = null;
     private Context context = null;
     private ImageReader mImage = null;
+    private ImageReaderAdapter imageReaderAdapter = null;
     private Surface surface = null;
     private CameraCharacteristics characteristics;
 
@@ -128,7 +129,7 @@ public class CameraReference {
 
     // preview callback
     public PreviewCallback callback_thiz = null;
-    Object thiz = this;
+    CameraReference thiz = this;
     //public CameraReference.Size size = null;//new Size(32,32);
 
     // parameters
@@ -141,7 +142,7 @@ public class CameraReference {
     //private ByteBuffer byteBuffer = null;
     //private byte[] byteBuffer = null;
 
-    public ObjectPool<ObjectBuffer> bufferPool = null;
+    public ObjectPool<ObjectBuffer> bufferPool = new ObjectPool<ObjectBuffer>(ObjectBuffer.class);
 
     void reset_fields() {
         synchronized (CameraHelper._syncObj) {
@@ -154,6 +155,7 @@ public class CameraReference {
             captureRequestBuilder = null;
             context = null;
             mImage = null;
+            imageReaderAdapter = null;
             surface = null;
             auxiliaryThread = null;
             imageReadThread = null;
@@ -338,6 +340,9 @@ public class CameraReference {
             }
 
 
+            if (imageReaderAdapter != null)
+                imageReaderAdapter.quitSafely();
+
             if (auxiliaryThread != null)
                 auxiliaryThread.quitSafely();
 
@@ -476,9 +481,11 @@ public class CameraReference {
         }
     }
 
-    public void startPreview(PreviewCallback callback, ObjectPool<ObjectBuffer> _bufferPool) {
+    public void startPreview(PreviewCallback callback
+            //, ObjectPool<ObjectBuffer> _bufferPool
+    ) {
 
-        bufferPool = _bufferPool;
+        //bufferPool = _bufferPool;
 
         Log.w(TAG, "startPreview");
         if (CameraHelper.CanUseNewCameraAPI()) {
@@ -540,7 +547,8 @@ public class CameraReference {
 
                 //Toast.makeText(context, "Configuration change", Toast.LENGTH_SHORT).show();
 
-                mImage.setOnImageAvailableListener(new ImageReaderAdapter(this), new Handler(imageReadThread.getLooper()));
+                imageReaderAdapter = new ImageReaderAdapter(this);
+                mImage.setOnImageAvailableListener(imageReaderAdapter, new Handler(imageReadThread.getLooper()));
 
                 //CameraHelper.postSurfaceUpdate();
 
@@ -589,7 +597,7 @@ public class CameraReference {
                             break;
                         synchronized ( thiz ) {
                             if (isPreviewing())
-                                callback_thiz.onPreviewFrame(buffer,old_camera);
+                                callback_thiz.onPreviewFrame(thiz, buffer,thiz.old_camera);
                         }
                     }
                 }
@@ -601,8 +609,8 @@ public class CameraReference {
                 @Override
                 public void onPreviewFrame(byte[] data, android.hardware.Camera camera) {
 
-                    // allow max of 16 elementos in the queue
-                    if (old_buffer_queue.size() < 16) {
+                    // allow max of 3 frames in the queue
+                    if (old_buffer_queue.size() < 3) {
 
                         ObjectBuffer objectBuffer = bufferPool.create();
                         objectBuffer.setSize(hwBufferSize.tcp_size);
@@ -814,18 +822,50 @@ public class CameraReference {
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     static
-    class ImageReaderAdapter implements ImageReader.OnImageAvailableListener {
+    class ImageReaderAdapter implements ImageReader.OnImageAvailableListener, Runnable {
 
         CameraReference init;
+        Thread previewThread = null;
+        ObjectQueue<ObjectBuffer> buffer_queue = new ObjectQueue<>();
 
         public ImageReaderAdapter(CameraReference init) {
             this.init = init;
+            previewThread = new Thread(this, "ImageReaderAdapter Thread");
+            previewThread.start();
+        }
+
+        public void quitSafely() {
+            previewThread.interrupt();
+            //wait
+            while (previewThread.isAlive()) { //|| old_has_buffer
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            previewThread = null;
+        }
+
+        @Override
+        public void run(){
+            while (!Thread.interrupted()){
+                ObjectBuffer buffer = buffer_queue.dequeue();
+                if (buffer == null)//signal
+                    break;
+                init.callback_thiz.onPreviewFrame(init, buffer,init.new_camera);
+            }
         }
 
         @Override
         public void onImageAvailable(ImageReader imageReader) {
             Image frame = imageReader.acquireNextImage();
             int format = imageReader.getImageFormat();//frame.getFormat();
+            //avoid enqueue a lot of image buffers
+            if (buffer_queue.size() >= 3){
+                frame.close();
+                return;
+            }
             if ( format == ImageFormat.YUV_420_888 ) {
                 synchronized(init) {
                     if (!init.isPreviewing()){
@@ -891,7 +931,8 @@ public class CameraReference {
                             }
                         }
 
-                        init.callback_thiz.onPreviewFrame(objectBuffer, init.new_camera);
+                        //init.callback_thiz.onPreviewFrame(init, objectBuffer, init.new_camera);
+                        buffer_queue.enqueue(objectBuffer);
                     } else if (init.param_format == ImageFormat.YV12) {
 
                         ByteBuffer cameraByteBuffer;
@@ -921,7 +962,8 @@ public class CameraReference {
                             cameraByteBuffer.get(byteBuffer, ySize + uvSize + h * uvStride, uvStride);
                         }
 
-                        init.callback_thiz.onPreviewFrame(objectBuffer, init.new_camera);
+                        //init.callback_thiz.onPreviewFrame(init, objectBuffer, init.new_camera);
+                        buffer_queue.enqueue(objectBuffer);
                     }
 
                 }
@@ -981,7 +1023,8 @@ public class CameraReference {
                         cameraByteBuffer.get(byteBuffer, ySize + uvSize + h * uvStride, uvStride);
                     }
 
-                    init.callback_thiz.onPreviewFrame(objectBuffer,init.new_camera);
+                    //init.callback_thiz.onPreviewFrame(init, objectBuffer,init.new_camera);
+                    buffer_queue.enqueue(objectBuffer);
 
                 }
             } else if ( format == ImageFormat.NV21 ) {
@@ -1059,7 +1102,8 @@ public class CameraReference {
                         }
                     }
 
-                    init.callback_thiz.onPreviewFrame(objectBuffer,init.new_camera);
+                    //init.callback_thiz.onPreviewFrame(init, objectBuffer,init.new_camera);
+                    buffer_queue.enqueue(objectBuffer);
 
                 }
 
@@ -1096,7 +1140,7 @@ public class CameraReference {
     }
 
     public interface PreviewCallback {
-        void onPreviewFrame(ObjectBuffer objectBuffer, Object src_camera);
+        void onPreviewFrame(CameraReference cameraReference, ObjectBuffer objectBuffer, Object src_camera);
     }
 
     public static class Size {

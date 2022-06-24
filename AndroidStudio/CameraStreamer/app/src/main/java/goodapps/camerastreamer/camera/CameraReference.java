@@ -862,7 +862,11 @@ public class CameraReference {
 
         @Override
         public void onImageAvailable(ImageReader imageReader) {
-            Image frame = imageReader.acquireNextImage();
+            //Image frame = imageReader.acquireNextImage();
+            Image frame = imageReader.acquireLatestImage();
+            if (frame == null)
+                return;
+
             int format = imageReader.getImageFormat();//frame.getFormat();
             //avoid enqueue a lot of image buffers
             if (buffer_queue.size() >= 3){

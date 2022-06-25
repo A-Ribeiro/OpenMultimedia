@@ -329,12 +329,12 @@ public class CameraStreamingGLViewActivity extends AppCompatActivity implements 
                                     synchronized (videoEncoder_sync) {
                                         if (videoEncoder == null) {
                                             videoEncoder = new VideoEncoder(selectedType, new int[]{currentSize.width, currentSize.height, currentSize.width, transmission_format});
-                                            videoEncoder.initialize(currentSize.width, currentSize.height, 1000000, 30, 1);
+                                            videoEncoder.initialize(currentSize.width, currentSize.height, configurationData.bitrate, 30, 5);
                                         } else if (videoEncoder.type != selectedType) {
                                             videoEncoder.setCallback(null);
                                             videoEncoder.release();
                                             videoEncoder = new VideoEncoder(selectedType, new int[]{currentSize.width, currentSize.height, currentSize.width, transmission_format});
-                                            videoEncoder.initialize(currentSize.width, currentSize.height, 1000000, 30, 1);
+                                            videoEncoder.initialize(currentSize.width, currentSize.height, configurationData.bitrate, 30, 5);
                                         }
 
                                         if (!videoEncoder.isCallbackSet()) {

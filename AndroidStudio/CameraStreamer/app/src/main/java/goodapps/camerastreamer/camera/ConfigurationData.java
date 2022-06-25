@@ -25,6 +25,8 @@ public class ConfigurationData implements Serializable{
     public int fps_min;
     public int fps_max;
 
+    public int bitrate;
+
     public byte[] toByteArray() {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutput out = null;

@@ -52,7 +52,7 @@ public class SplashActivity extends AppCompatActivity {
                 Intent intent = new Intent( thiz, StreamingConfigurationActivity.class );
                 startActivity(intent);
             }
-        }, 10, TimeUnit.SECONDS);
+        }, 7, TimeUnit.SECONDS);
 
     }
 }

@@ -116,17 +116,13 @@ public class CameraHelper {
                     public void run() {
                         synchronized (_syncObj) {
                             surfaceTexture.updateTexImage();
-
-                            //synchronized (camera) {
-                                //if (camera.isPreviewing()) {
-                                    size = camera.getSizeForTexture();
-                                    ((GLRendererCamera) glView.getRenderer()).setupSquareScale(size.width, size.height);
-                                //}
-                            //}
-
-                            glView.requestRender();
-                            textureProcessing = false;
+                            if (camera != null && glView != null) {
+                                size = camera.getSizeForTexture();
+                                ((GLRendererCamera) glView.getRenderer()).setupSquareScale(size.width, size.height);
+                                glView.requestRender();
+                            }
                         }
+                        textureProcessing = false;
                     }
                 }
             );
@@ -342,8 +338,10 @@ public class CameraHelper {
      * to avoid conflict with the current OpenGL viewing creation.
      */
     public static void onCreateResetGLView() {
-        glView = null;
-        textureID = 10;
+        synchronized (_syncObj) {
+            glView = null;
+            textureID = 10;
+        }
     }
 
     public static boolean isOpened() {

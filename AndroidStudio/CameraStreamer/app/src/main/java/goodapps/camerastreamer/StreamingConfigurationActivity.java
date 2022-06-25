@@ -44,6 +44,9 @@ public class StreamingConfigurationActivity extends AppCompatActivity implements
     List<String> transmission_type_list;
     ArrayAdapter<String> transmission_type_list_adapter;
 
+    List<String> bitrate_list;
+    ArrayAdapter<String> bitrate_list_adapter;
+
     List<int[]> fpsList;
     ArrayAdapter<int[]> fpsAdapter;
 
@@ -136,6 +139,26 @@ public class StreamingConfigurationActivity extends AppCompatActivity implements
         Spinner transmission_type = (Spinner)findViewById(R.id.spinner_transmission_type);
         transmission_type.setAdapter( transmission_type_list_adapter );
         transmission_type.setSelection( 0 );
+
+        //
+        // Bitrate
+        //
+        bitrate_list = new ArrayList<String>();
+        bitrate_list.add("1500000");
+        bitrate_list.add("2500000");
+        bitrate_list.add("3500000");
+        bitrate_list.add("4500000");
+        bitrate_list.add("5500000");
+
+        bitrate_list_adapter = new ArrayAdapter<String>(this, R.layout.list_element, R.id.element_text, bitrate_list);
+        bitrate_list_adapter.setDropDownViewResource(R.layout.list_element);
+
+        Spinner bitrate_type = (Spinner)findViewById(R.id.spinner_codec_bitrate);
+        bitrate_type.setAdapter( bitrate_list_adapter );
+        bitrate_type.setSelection( 0 );
+
+
+
 
         //
         // Start Button
@@ -242,6 +265,8 @@ public class StreamingConfigurationActivity extends AppCompatActivity implements
         CheckBox use_flashlight = (CheckBox)findViewById(R.id.checkBox_use_flashlight);
         Spinner spinner_camera_resolution = (Spinner)findViewById( R.id.spinner_camera_resolution );
         Spinner spinner_camera_fps = (Spinner)findViewById( R.id.spinner_camera_fps );
+        Spinner spinner_bitrate = (Spinner)findViewById( R.id.spinner_codec_bitrate );
+
 
         //load preferences
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
@@ -251,6 +276,7 @@ public class StreamingConfigurationActivity extends AppCompatActivity implements
         int channel_h_pref = sharedPref.getInt("camera height", res_h );
         int fps_min = sharedPref.getInt("camera fps min", initial_fps[0] );
         int fps_max = sharedPref.getInt("camera fps max", initial_fps[1] );
+        String bitrate = sharedPref.getString("codec bitrate", bitrate_list.get(1).toString() );
         boolean use_flashlight_pref = sharedPref.getBoolean("use flashlight", false );
 
         device_name.setText(device_name_pref);
@@ -278,6 +304,14 @@ public class StreamingConfigurationActivity extends AppCompatActivity implements
             int[] element = fpsList.get(i);
             if (element[0] == fps_min && element[1] == fps_max){
                 spinner_camera_fps.setSelection(i);
+                break;
+            }
+        }
+        //bitrate
+        for(int i=0;i<bitrate_list.size();i++) {
+            String element = bitrate_list.get(i);
+            if (element.equals(bitrate)){
+                spinner_bitrate.setSelection(i);
                 break;
             }
         }
@@ -343,6 +377,7 @@ public class StreamingConfigurationActivity extends AppCompatActivity implements
         CheckBox use_flashlight = (CheckBox)findViewById(R.id.checkBox_use_flashlight);
         Spinner spinner_camera_resolution = (Spinner)findViewById( R.id.spinner_camera_resolution );
         Spinner spinner_camera_fps = (Spinner)findViewById( R.id.spinner_camera_fps );
+        Spinner spinner_bitrate = (Spinner)findViewById( R.id.spinner_codec_bitrate );
 
         //save preferences
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
@@ -364,6 +399,8 @@ public class StreamingConfigurationActivity extends AppCompatActivity implements
             editor.putInt("camera fps max", fpsSelected[1] );
         }
 
+        editor.putString("codec bitrate", spinner_bitrate.getSelectedItem().toString());
+
         editor.commit();
 
     }
@@ -376,6 +413,7 @@ public class StreamingConfigurationActivity extends AppCompatActivity implements
 
         Spinner spinner_camera_resolution = (Spinner)findViewById( R.id.spinner_camera_resolution );
         Spinner spinner_camera_fps = (Spinner)findViewById( R.id.spinner_camera_fps );
+        Spinner spinner_bitrate = (Spinner)findViewById( R.id.spinner_codec_bitrate );
 
         CameraReference.Size cameraSize = (CameraReference.Size)spinner_camera_resolution.getSelectedItem();
         int[] fpsSelected = (int[])spinner_camera_fps.getSelectedItem();
@@ -395,6 +433,8 @@ public class StreamingConfigurationActivity extends AppCompatActivity implements
         configurationData.height = cameraSize.height;
         configurationData.fps_min = fpsSelected[0];
         configurationData.fps_max = fpsSelected[1];
+        configurationData.bitrate = Integer.parseInt(spinner_bitrate.getSelectedItem().toString());
+
 
         //
         // call activity with parameters...

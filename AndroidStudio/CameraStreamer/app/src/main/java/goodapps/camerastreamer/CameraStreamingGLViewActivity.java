@@ -13,6 +13,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.zip.Deflater;
@@ -31,6 +33,7 @@ import goodapps.camerastreamer.gl.GLView;
 import network.NetworkConstants;
 import network.StreamDiscovering;
 import network.StreamTCPServer;
+import util.ObjectBuffer;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -69,6 +72,7 @@ public class CameraStreamingGLViewActivity extends AppCompatActivity implements 
     */
 
     volatile VideoEncoder videoEncoder = null;
+    Object videoEncoder_sync = new Object();
 
 
 
@@ -238,7 +242,40 @@ public class CameraStreamingGLViewActivity extends AppCompatActivity implements 
 
             CameraHelper.configureCamera( configurationData.width,configurationData.height, configurationData.useFlashLight ,new int[] {configurationData.fps_min,configurationData.fps_max }, captureImageFormat);
 
-            streamTCPServer = StreamTCPServer.create( NetworkConstants.PUBLIC_PORT_START );
+            streamTCPServer = StreamTCPServer.create(NetworkConstants.PUBLIC_PORT_START,
+                    new StreamTCPServer.Callback() {
+                        @Override
+                        public void OnNewClient(Socket clientSocket) {
+                            synchronized (videoEncoder_sync) {
+                                if (videoEncoder != null) {
+                                    synchronized (videoEncoder.codecSpecificData) {
+                                        for (byte[] data : videoEncoder.codecSpecificData) {
+                                            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(data.length + 16);
+                                            byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+
+                                            int[] params = (int[]) videoEncoder.opaqueData;
+
+                                            byteBuffer.position(0);
+
+                                            byteBuffer.putInt(data.length);
+                                            byteBuffer.putInt(params[0]);//width
+                                            byteBuffer.putInt(params[1]);//height
+                                            byteBuffer.putInt(params[3]);// transmission type
+
+                                            byteBuffer.put(data, 0, data.length);
+
+                                            try {
+                                                clientSocket.getOutputStream().write(byteBuffer.array(), byteBuffer.arrayOffset(), byteBuffer.position());
+                                            } catch (IOException e) {
+                                                //e.printStackTrace();
+                                            }
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
             // 1 sec interval...
             streamDiscovering = new StreamDiscovering(configurationData.deviceName, 1000);
 
@@ -268,10 +305,10 @@ public class CameraStreamingGLViewActivity extends AppCompatActivity implements 
             CameraHelper.startPreview(
                 new CameraReference.PreviewCallback() {
                     @Override
-                    public void onPreviewFrame(byte[] data, Object camera) {
-                        if (streamTCPServer != null) {
+                    public void onPreviewFrame(CameraReference cameraReference, ObjectBuffer objectBuffer, Object camera) {
+                        if (streamTCPServer != null && streamTCPServer.objectQueue.size() < 8) {
 
-                            if (size_yuv420 == data.length) {
+                            if (size_yuv420 == objectBuffer.getSize()) {
 
                                 VideoEncoder.Type selectedType = VideoEncoder.Type.None;
                                 int transmission_format = 0;
@@ -289,51 +326,54 @@ public class CameraStreamingGLViewActivity extends AppCompatActivity implements 
 
                                 if (selectedType != VideoEncoder.Type.None) {
 
-                                    if (videoEncoder == null) {
-                                        videoEncoder = new VideoEncoder(selectedType);
-                                        videoEncoder.opaqueData = new int[]{currentSize.width,currentSize.height,currentSize.width,transmission_format};
-                                        videoEncoder.initialize( currentSize.width,currentSize.height,1000000, 30, 1 );
-                                    } else if ( videoEncoder.type != selectedType ) {
-                                        videoEncoder.setCallback(null);
-                                        videoEncoder.release();
-                                        videoEncoder = new VideoEncoder(selectedType);
-                                        videoEncoder.opaqueData = new int[]{currentSize.width,currentSize.height,currentSize.width,transmission_format};
-                                        videoEncoder.initialize( currentSize.width,currentSize.height,1000000, 30, 1 );
+                                    synchronized (videoEncoder_sync) {
+                                        if (videoEncoder == null) {
+                                            videoEncoder = new VideoEncoder(selectedType, new int[]{currentSize.width, currentSize.height, currentSize.width, transmission_format});
+                                            videoEncoder.initialize(currentSize.width, currentSize.height, configurationData.bitrate, 30, 5);
+                                        } else if (videoEncoder.type != selectedType) {
+                                            videoEncoder.setCallback(null);
+                                            videoEncoder.release();
+                                            videoEncoder = new VideoEncoder(selectedType, new int[]{currentSize.width, currentSize.height, currentSize.width, transmission_format});
+                                            videoEncoder.initialize(currentSize.width, currentSize.height, configurationData.bitrate, 30, 5);
+                                        }
+
+                                        if (!videoEncoder.isCallbackSet()) {
+                                            videoEncoder.setCallback(new VideoEncoder.Callback() {
+                                                @Override
+                                                public void onVideoEncoderData(byte[] data, Object opaque) {
+                                                    int[] params = (int[]) opaque;
+
+                                                    byteBuffer.position(0);
+
+                                                    byteBuffer.putInt(data.length);
+                                                    byteBuffer.putInt(params[0]);//width
+                                                    byteBuffer.putInt(params[1]);//height
+                                                    byteBuffer.putInt(params[3]);// transmission type
+
+                                                    byteBuffer.put(data, 0, data.length);
+
+                                                    streamTCPServer.send(byteBuffer.array(), byteBuffer.arrayOffset(), byteBuffer.position());
+                                                }
+                                            });
+                                        }
                                     }
 
-                                    if (!videoEncoder.isCallbackSet()) {
-                                        videoEncoder.setCallback(new VideoEncoder.Callback() {
-                                            @Override
-                                            public void onVideoEncoderData(byte[] data, Object opaque) {
-                                                int[] params = (int[])opaque;
+                                    //if (streamTCPServer.hasNewConnection()) {
+                                    //    videoEncoder.sendAllCSD();
+                                    //}
 
-                                                byteBuffer.position(0);
+                                    ByteBuffer cameraData = ByteBuffer.wrap(objectBuffer.getArray());
+                                    cameraData.position(objectBuffer.getSize());
 
-                                                byteBuffer.putInt(data.length);
-                                                byteBuffer.putInt(params[0]);//width
-                                                byteBuffer.putInt(params[1]);//height
-                                                byteBuffer.putInt(params[3]);// transmission type
-
-                                                byteBuffer.put(data, 0, data.length);
-
-                                                streamTCPServer.send(byteBuffer.array(), byteBuffer.arrayOffset(), byteBuffer.position());
-                                            }
-                                        });
+                                    synchronized (videoEncoder_sync) {
+                                        videoEncoder.encode420P(cameraData);
                                     }
-
-                                    if (streamTCPServer.hasNewConnection()) {
-                                        videoEncoder.sendAllCSD();
-                                    }
-
-                                    ByteBuffer cameraData = ByteBuffer.wrap(data);
-                                    cameraData.position(data.length);
-                                    videoEncoder.encode420P( cameraData );
 
                                 } else if (configurationData.transmissionType.equals("YUV420 (Zlib)")){
 
                                     // Compress the bytes
                                     Deflater compresser = new Deflater(Deflater.BEST_SPEED);
-                                    compresser.setInput(data);
+                                    compresser.setInput(objectBuffer.getArray(),0,objectBuffer.getSize());
                                     compresser.finish();
                                     int compressedDataLength = compresser.deflate(auxCompressBuffer);
                                     compresser.end();
@@ -358,17 +398,16 @@ public class CameraStreamingGLViewActivity extends AppCompatActivity implements 
                                     byteBuffer.putInt( currentSize.height );
                                     byteBuffer.putInt(FORMAT_YUV420P);
 
-                                    byteBuffer.put(data);
+                                    byteBuffer.put(objectBuffer.getArray(), 0, objectBuffer.getSize());
 
                                     streamTCPServer.send(byteBuffer.array(), byteBuffer.arrayOffset(), byteBuffer.position());
-
                                 }
-
-
                             }
                         }
                         //((GLRendererYUV2RGB)mGLView.getRenderer()).postYV12( data, size.width, size.height );
 
+                        // return the objectBuffer to the camera pool...
+                        cameraReference.bufferPool.release(objectBuffer);
                     }
                 }
             );
@@ -404,10 +443,12 @@ public class CameraStreamingGLViewActivity extends AppCompatActivity implements 
             streamTCPServer = null;
         }
 
-        if (videoEncoder != null) {
-            videoEncoder.setCallback(null);
-            videoEncoder.release();
-            videoEncoder = null;
+        synchronized (videoEncoder_sync) {
+            if (videoEncoder != null) {
+                videoEncoder.setCallback(null);
+                videoEncoder.release();
+                videoEncoder = null;
+            }
         }
 
         //multicastLock.release();

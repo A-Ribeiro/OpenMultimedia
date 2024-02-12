@@ -34,3 +34,6 @@ target_link_libraries(${PROJECT_NAME}
 
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/Syphon5/Syphon.framework"
      DESTINATION "${CMAKE_BINARY_DIR}/Frameworks/")
+
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/Syphon5/Syphon.framework"
+     DESTINATION "${CMAKE_BINARY_DIR}/bin/Frameworks/")

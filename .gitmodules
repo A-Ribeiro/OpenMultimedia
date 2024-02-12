@@ -1,0 +1,6 @@
+[submodule "cpp/libs/InteractiveToolkit"]
+	path = cpp/libs/InteractiveToolkit
+	url = https://github.com/A-Ribeiro/InteractiveToolkit.git
+[submodule "cpp/libs/InteractiveToolkit-Extension"]
+	path = cpp/libs/InteractiveToolkit-Extension
+	url = https://github.com/A-Ribeiro/InteractiveToolkit-Extension.git

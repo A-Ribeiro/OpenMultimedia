@@ -3,7 +3,8 @@
 
 #include "PlatformGL.h"
 #include <string>
-#include <aRibeiroCore/aRibeiroCore.h>
+#include <InteractiveToolkit/MathCore/MathCore.h>
+
 #include "GLTexture.h"
 
 namespace openglWrapper {
@@ -16,7 +17,7 @@ namespace openglWrapper {
     ///
     /// \author Alessandro Ribeiro
     ///
-    class _SSE2_ALIGN_PRE MipMapImage{
+    class MipMapImage{
     public:
         uint8_t* buffer;
         int width;
@@ -30,8 +31,7 @@ namespace openglWrapper {
         void copyBufferResample(const MipMapImage& src);
         ~MipMapImage();
 
-        SSE2_CLASS_NEW_OPERATOR
-    } _SSE2_ALIGN_POS ;
+    } ;
     
 
     /// \brief Software MIPMAP generator
@@ -67,7 +67,7 @@ namespace openglWrapper {
     ///
     /// \author Alessandro Ribeiro
     ///
-    class _SSE2_ALIGN_PRE MipMapGenerator {
+    class MipMapGenerator {
         
     public:
         std::vector<MipMapImage*> images;///<The MIP array. The position 0 is the largest image.
@@ -86,8 +86,7 @@ namespace openglWrapper {
                         int channels);
         ~MipMapGenerator();
         
-        SSE2_CLASS_NEW_OPERATOR
-    } _SSE2_ALIGN_POS ;
+    } ;
     
 }
 

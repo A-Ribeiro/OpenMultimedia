@@ -1,8 +1,5 @@
-#include <aRibeiroCore/aRibeiroCore.h>
-#include <aRibeiroPlatform/aRibeiroPlatform.h>
-#include <aRibeiroData/aRibeiroData.h>
-using namespace aRibeiro;
-
+#include <InteractiveToolkit/InteractiveToolkit.h>
+#include <InteractiveToolkit-Extension/InteractiveToolkit-Extension.h>
 
 #import <Foundation/Foundation.h>
 #include <Syphon/Syphon.h>
@@ -66,19 +63,19 @@ public:
 
 void signal_handler(int signal) {
     printf("   ****************** signal_handler **********************\n");
-    PlatformThread::getMainThread()->interrupt();
+    Platform::Thread::getMainThread()->interrupt();
 }
 
 int main(int argc, char* argv[]){
 
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 
-    PlatformSignal::Set(signal_handler);
-    PlatformPath::setWorkingPath(PlatformPath::getExecutablePath(argv[0]));
+    Platform::Signal::Set(signal_handler);
+    ITKCommon::Path::setWorkingPath(ITKCommon::Path::getExecutablePath(argv[0]));
     // initialize self referencing of the main thread.
-    PlatformThread::getMainThread();
+    Platform::Thread::staticInitialization();
 
-    int num_of_system_threads = PlatformThread::QueryNumberOfSystemThreads();
+    int num_of_system_threads = Platform::Thread::QueryNumberOfSystemThreads();
     
     GLContextWithoutWindow *ogl = new GLContextWithoutWindow();
     SyphonOpenGLServer *syServer;
@@ -88,10 +85,10 @@ int main(int argc, char* argv[]){
     //ogl->makeCurrent();
     //glViewport(0,0,1920,1080);
 
-    YUV2RGB_Multithread m_YUV2RGB_Multithread( PlatformThread::QueryNumberOfSystemThreads()/2, PlatformThread::QueryNumberOfSystemThreads()*2 );
-    aRibeiro::PlatformLowLatencyQueueIPC yuy2_queue( "aRibeiro Cam 01", PlatformQueueIPC_READ, 8, 1920 * 1080 * 2);
-    aRibeiro::ObjectBuffer data_buffer;
-    aRibeiro::ObjectBuffer aux_rgb_buffer;
+    YUV2RGB_Multithread m_YUV2RGB_Multithread( Platform::Thread::QueryNumberOfSystemThreads()/2, Platform::Thread::QueryNumberOfSystemThreads()*2 );
+    Platform::IPC::LowLatencyQueueIPC yuy2_queue( "aRibeiro Cam 01", Platform::IPC::QueueIPC_READ, 8, 1920 * 1080 * 2);
+    Platform::ObjectBuffer data_buffer;
+    Platform::ObjectBuffer aux_rgb_buffer;
     data_buffer.setSize(1920 * 1080 * 2);
     aux_rgb_buffer.setSize(1920 * 1080 * 4);
 
@@ -123,7 +120,7 @@ int main(int argc, char* argv[]){
         [syServer unbindAndPublish];
     }
 
-    while (!PlatformThread::isCurrentThreadInterrupted()) {
+    while (!Platform::Thread::isCurrentThreadInterrupted()) {
         
         if (yuy2_queue.read(&data_buffer)) {
             int size_check = 1920 * 1080 * 2;

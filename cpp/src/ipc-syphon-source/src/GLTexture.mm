@@ -2,14 +2,18 @@
 
 #include "MipMapGenerator.h"
 #include "PlatformGL.h"
-#include <aRibeiroData/PNGHelper.h>
-#include <aRibeiroData/JPGHelper.h>
-#include <aRibeiroCore/SetNullAndDelete.h>
-#include <aRibeiroCore/geometricOperations.h>
+
+#include <InteractiveToolkit/MathCore/MathCore.h>
+#include <InteractiveToolkit-Extension/InteractiveToolkit-Extension.h>
+
+//#include <aRibeiroData/PNGHelper.h>
+//#include <aRibeiroData/JPGHelper.h>
+//#include <aRibeiroCore/SetNullAndDelete.h>
+//#include <aRibeiroCore/geometricOperations.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-using namespace aRibeiro;
+//using namespace aRibeiro;
 
 namespace openglWrapper {
 
@@ -252,18 +256,18 @@ namespace openglWrapper {
     GLTexture *GLTexture::loadFromFile(const char* filename, bool invertY, bool sRGB) {
         int w, h, channels, depth;
 
-        bool isPNG = aRibeiro::PNGHelper::isPNGFilename(filename);
-        bool isJPG = aRibeiro::JPGHelper::isJPGFilename(filename);
+        bool isPNG = ITKExtension::Image::PNG::isPNGFilename(filename);
+        bool isJPG = ITKExtension::Image::JPG::isJPGFilename(filename);
 
         void (*closeFnc)(char *&) = NULL;
 
         char* buffer = NULL;
         if (isPNG){
-            buffer = PNGHelper::readPNG(filename, &w, &h, &channels, &depth, invertY);
-            closeFnc = &PNGHelper::closePNG;
+            buffer = ITKExtension::Image::PNG::readPNG(filename, &w, &h, &channels, &depth, invertY);
+            closeFnc = &ITKExtension::Image::PNG::closePNG;
         } else if (isJPG) {
-            buffer = JPGHelper::readJPG(filename, &w, &h, &channels, &depth, invertY);
-            closeFnc = &JPGHelper::closeJPG;
+            buffer = ITKExtension::Image::JPG::readJPG(filename, &w, &h, &channels, &depth, invertY);
+            closeFnc = &ITKExtension::Image::JPG::closeJPG;
         }
 
         ITK_ABORT(
@@ -398,7 +402,7 @@ namespace openglWrapper {
         ITK_ABORT(input_data_type!=GL_UNSIGNED_BYTE, "writeToPNG only works with GL_UNSIGNED_BYTE data type.");
 
         TextureBuffer buffer = download(NULL);
-        PNGHelper::writePNG(filename, width, height, input_component_count, (char*)buffer.data, !invertY);
+        ITKExtension::Image::PNG::writePNG(filename, width, height, input_component_count, (char*)buffer.data, !invertY);
         buffer.dispose();
     }
 

@@ -130,7 +130,7 @@ else()
     message(STATUS "NOTE: to compile 'ipc_syphon_source' you need a Mac/x64 hardware")
 endif()
 
-if (UNIX)
+if (UNIX AND NOT APPLE)
     add_subdirectory(cpp/src/ipc-v4l2loopback-source)
     add_subdirectory(cpp/src/v4l2-to-network)
 else()

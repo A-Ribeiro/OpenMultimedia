@@ -6,7 +6,7 @@
 //#include <OpenGL/gl3.h>
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/gl3.h>
-#include <aRibeiroCore/common.h>
+#include <InteractiveToolkit/MathCore/MathCore.h>
 
 namespace openglWrapper {
 

@@ -1,6 +1,8 @@
 #ifndef YUV2RGB__HH__
 #define YUV2RGB__HH__
 
+#include <InteractiveToolkit/InteractiveToolkit.h>
+#include <InteractiveToolkit-Extension/InteractiveToolkit-Extension.h>
 
 ITK_INLINE
 static int iClamp(int v) {
@@ -39,18 +41,18 @@ struct YUV2RGB_Multithread_Job {
     uint8_t* out_buffer;
 };
 
-class YUV2RGB_Multithread {
+class YUV2RGB_Multithread: public EventCore::HandleCallback {
 public:
 
-    std::vector< aRibeiro::PlatformThread* > threads;
+    std::vector< Platform::Thread* > threads;
     int jobDivider;
     int threadCount;
-    aRibeiro::PlatformSemaphore semaphore;
-    aRibeiro::ObjectQueue<YUV2RGB_Multithread_Job> queue;
+    Platform::Semaphore semaphore;
+    Platform::ObjectQueue<YUV2RGB_Multithread_Job> queue;
 
     void threadRun() {
         bool isSignaled;
-        while (!aRibeiro::PlatformThread::isCurrentThreadInterrupted()) {
+        while (!Platform::Thread::isCurrentThreadInterrupted()) {
             YUV2RGB_Multithread_Job job = queue.dequeue(&isSignaled);
             if (isSignaled)
                 break;
@@ -133,7 +135,7 @@ public:
         this->jobDivider = jobDivider;
         this->threadCount = threadCount;
         for (int i = 0; i < threadCount; i++) {
-            threads.push_back(new aRibeiro::PlatformThread(this, &YUV2RGB_Multithread::threadRun));
+            threads.push_back(new Platform::Thread( EventCore::CallbackWrapper( &YUV2RGB_Multithread::threadRun,this)));
         }
         for (int i = 0; i < threads.size(); i++)
             threads[i]->start();

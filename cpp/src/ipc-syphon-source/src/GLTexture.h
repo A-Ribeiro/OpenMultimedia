@@ -3,8 +3,10 @@
 
 #include "PlatformGL.h"
 //#include <glew/glew.h> // extensions here
-#include <aRibeiroCore/common.h> // std types
-#include <aRibeiroCore/SetNullAndDelete.h>
+//#include <aRibeiroCore/common.h> // std types
+#include <InteractiveToolkit/MathCore/MathCore.h>
+
+//#include <aRibeiroCore/SetNullAndDelete.h>
 
 namespace openglWrapper {
 
@@ -29,7 +31,10 @@ namespace openglWrapper {
         }
 
         void dispose() {
-            aRibeiro::setNullAndDeleteArray(data);
+            if (data != NULL){
+                delete data;
+                data = NULL;
+            }
         }
     };
 

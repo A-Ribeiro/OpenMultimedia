@@ -1,5 +1,6 @@
 #include "PlatformGL.h"
-#include <aRibeiroCore/common.h>
+#include <InteractiveToolkit/MathCore/MathCore.h>
+
 
 //#include <glad/gl.h>
 #include <stdio.h>
@@ -97,7 +98,7 @@ namespace openglWrapper {
             OPENGL_CMD_FL(glGetInfoLogARB(shader, sizeof(log), 0, log), file, line);
             #endif
 
-            ARIBEIRO_ABORT_LF(file, line,
+            ITK_ABORT_FL(file, line,
                 true,
                 "Failed to compile shader: %s %s\n", aux_string, log);
 
@@ -122,7 +123,7 @@ namespace openglWrapper {
             OPENGL_CMD_FL(glGetInfoLogARB(program, sizeof(log), 0, log), file, line);
             #endif
 
-            ARIBEIRO_ABORT_LF(file, line,
+            ITK_ABORT_FL(file, line,
                 true,
                 "Failed to link shader: %s %s\n", aux_string, log);
 

@@ -557,18 +557,29 @@ public:
         job.src_v_start_index = src_v_start_index;
         job.src_u_start_index = src_u_start_index;
 
-        for (int block = 0; block < division; block++)
+
+        int jobs_dispatched = 0;
+        int block = 0;
+
+        job.block = block;
+        job.blockStart = block * h_per_block;
+        job.blockEnd = (block + 1) * h_per_block;
+
+        while ( job.blockStart < yuy_h )
         {
-            job.block = block;
-            job.blockStart = block * h_per_block;
-            job.blockEnd = (block + 1) * h_per_block;
             if (yuy_h < job.blockEnd)
                 job.blockEnd = yuy_h;
 
             queue.enqueue(job);
+
+            jobs_dispatched ++;
+            block ++;
+            job.block = block;
+            job.blockStart = block * h_per_block;
+            job.blockEnd = (block + 1) * h_per_block;
         }
 
-        for (int block = 0; block < division; block++)
+        for (int block = 0; block < jobs_dispatched; block++)
             semaphore.blockingAcquire();
     }
 

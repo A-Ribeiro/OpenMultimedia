@@ -104,6 +104,7 @@ static int xioctl(int fh, int request, void *arg)
 #include <map>
 #include <string>
 #include <locale> // tolower
+#include <stdint.h>
 
 
 static std::string fcc2s(unsigned int val)
